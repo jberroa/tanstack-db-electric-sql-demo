@@ -31,38 +31,52 @@ Follow these steps to get the app running locally.
 
 ### Prerequisites
 
-- Node.js & pnpm
+- **Node.js 22** (required for Prisma migrations; use `nvm use` if you have [.nvmrc](.nvmrc))
+- npm or pnpm
 - Docker (for the database and Electric sync service)
 
 ### 1. Install Dependencies
 
 ```bash
-pnpm install
+npm install
+# or: pnpm install
 ```
 
 ### 2. Configure Environment Variables
 
-Create a `.env.local` file in the root directory and add your [Google OAuth credentials](https://www.better-auth.com/docs/authentication/google) (for authentication):
+Create a `.env.local` file (or use `.env.development`) with:
 
 ```env
+# Required for the app (already in .env.development)
+DATABASE_URL="postgresql://postgres:postgres@localhost:5432/debt_calculator_dev"
+BETTER_AUTH_SECRET="super-secret-dev-key"
+BETTER_AUTH_URL="http://localhost:3000"
+
+# Optional: Add for Google OAuth (otherwise email/password sign-in is used)
 GOOGLE_CLIENT_ID=your_google_client_id
 GOOGLE_CLIENT_SECRET=your_google_client_secret
+VITE_GOOGLE_AUTH_ENABLED=true
 ```
+
+Email/password authentication works without any OAuth setup. Add the Google variables only if you want "Sign in with Google".
 
 ### 3. Start Backend Services
 
 Start PostgreSQL and Electric SQL using Docker Compose:
 
 ```bash
-pnpm dc:up
+npm run dc:up
+# or: pnpm dc:up
 ```
 
 ### 4. Setup Database
 
-Apply the Prisma schema to your local PostgreSQL instance:
+Apply the Prisma schema and generate the client. **Node 22 is required** for migrations; run `nvm use` if you use nvm:
 
 ```bash
-pnpm db:migrate dev
+npm run db:migrate -- dev   # Apply migrations (or use Docker to run migration SQL if migrate fails)
+npm run db:generate        # Generate Prisma client (requires Node 22)
+# or: pnpm db:migrate dev && pnpm db:generate
 ```
 
 ### 5. Run the App
@@ -70,10 +84,16 @@ pnpm db:migrate dev
 Start the development server:
 
 ```bash
-pnpm dev
+npm run dev
+# or: pnpm dev
 ```
 
 Open [http://localhost:3000](http://localhost:3000) in your browser.
+
+### Troubleshooting
+
+- **"Cannot find native binding" / oxc-transform**: On Apple Silicon (M1/M2/M3), add `@oxc-transform/binding-darwin-arm64` explicitly: `pnpm add -D @oxc-transform/binding-darwin-arm64@0.96.0`
+- **Node version**: Use Node 22 for migrations (`nvm use` with `.nvmrc`)
 
 ## 💡 How it Works
 

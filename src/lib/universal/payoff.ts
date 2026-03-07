@@ -13,6 +13,7 @@ export interface MonthlyPayment {
   principal: Decimal;
   newBalance: Decimal;
   isMinimum: boolean;
+  extraAmount?: Decimal;
 }
 
 export interface MonthlySchedule {
@@ -283,11 +284,34 @@ export class PayoffCalculator {
         principal: c.principal,
         newBalance: c.endBalance,
         isMinimum: c.isMinPayment(),
+        extraAmount: c.payment.gt(c.minPayment)
+          ? c.payment.minus(c.minPayment)
+          : new Decimal(0),
       })),
       totalPayment: p.totalPayment,
       totalInterest: p.totalInterest,
       remainingBalance: p.remainingBalance,
     }));
+
+    // Order debts by when they get paid off (left-to-right = first cleared to last cleared)
+    const payoffMonthByDebtId = new Map<string, number>();
+    for (let m = 0; m < months.length; m++) {
+      for (const p of months[m].payments) {
+        if (p.newBalance.eq(0) && !payoffMonthByDebtId.has(p.debtId)) {
+          payoffMonthByDebtId.set(p.debtId, m);
+        }
+      }
+    }
+    const strategyOrder = this.getSortedDebts();
+    const sortedDebts = [...this.debts].sort((a, b) => {
+      const monthA = payoffMonthByDebtId.get(a.id) ?? Infinity;
+      const monthB = payoffMonthByDebtId.get(b.id) ?? Infinity;
+      if (monthA !== monthB) return monthA - monthB;
+      // Same month: use strategy order as tie-breaker
+      const idxA = strategyOrder.findIndex((d) => d.id === a.id);
+      const idxB = strategyOrder.findIndex((d) => d.id === b.id);
+      return idxA - idxB;
+    });
 
     return {
       strategy: this.strategy,
@@ -296,7 +320,7 @@ export class PayoffCalculator {
       totalInterestPaid,
       debtFreeDate: finalPeriod.month.toString(),
       monthsToPayoff: periods.length,
-      sortedDebts: this.getSortedDebts(),
+      sortedDebts,
     };
   }
 }

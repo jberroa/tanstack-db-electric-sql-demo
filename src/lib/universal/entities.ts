@@ -9,6 +9,7 @@ export const workbookSchema = z.object({
   name: z.string().max(48),
   monthlyPayment: z.string(),
   strategy: z.enum(['avalanche', 'snowball']),
+  planStartDate: z.string().nullable().optional(),
   createdAt: timestampField,
   updatedAt: timestampField,
 });
@@ -21,6 +22,8 @@ export const debtSchema = z.object({
   rate: z.string(),
   balance: z.string(),
   minPayment: z.string(),
+  limit: z.string().nullable().optional(),
+  dueDay: z.number().min(1).max(31).optional().nullable(),
   createdAt: timestampField,
   updatedAt: timestampField,
 });

@@ -7,9 +7,10 @@ import {
   TableHeader,
   TableRow,
 } from '@/components/ui/table';
-import { cn } from '@/lib/client/utils';
+import { cn, formatNumber } from '@/lib/client/utils';
 import { PayoffScheduleResult } from '@/lib/universal/payoff';
 import { Temporal } from '@js-temporal/polyfill';
+import Decimal from 'decimal.js';
 import { WorkbookDebt } from './DebtsList';
 
 interface PayoffScheduleProps {
@@ -17,6 +18,7 @@ interface PayoffScheduleProps {
   debts: WorkbookDebt[];
   showAllMonths: boolean;
   onShowAllMonthsChange: (show: boolean) => void;
+  currentMonthIndex?: number;
 }
 
 export function PayoffSchedule({
@@ -24,6 +26,7 @@ export function PayoffSchedule({
   debts,
   showAllMonths,
   onShowAllMonthsChange,
+  currentMonthIndex,
 }: PayoffScheduleProps) {
   const visibleMonths = showAllMonths
     ? payoffSchedule.months
@@ -65,19 +68,30 @@ export function PayoffSchedule({
             {visibleMonths.map((month) => {
               const monthDate = Temporal.PlainYearMonth.from(month.date);
               const isJanuary = monthDate.month === 1 && month.month > 0;
+              const isCurrentMonth =
+                currentMonthIndex !== undefined &&
+                month.month === currentMonthIndex;
               return (
                 <TableRow
                   key={month.month}
                   className={cn(
                     'hover:bg-muted/30 border-b-border',
                     isJanuary && 'border-t-2 border-t-foreground/40',
+                    isCurrentMonth && 'bg-primary/5 ring-1 ring-inset ring-primary/20',
                   )}
                 >
                   <TableCell className="font-medium text-sm text-foreground/80 pl-6 py-3">
-                    {monthDate.toPlainDate({ day: 1 }).toLocaleString('en-US', {
-                      month: 'short',
-                      year: 'numeric',
-                    })}
+                    <div className="flex items-center gap-2">
+                      {monthDate.toPlainDate({ day: 1 }).toLocaleString('en-US', {
+                        month: 'short',
+                        year: 'numeric',
+                      })}
+                      {isCurrentMonth && (
+                        <span className="text-[10px] font-semibold text-primary bg-primary/10 px-1.5 py-px rounded">
+                          You are here
+                        </span>
+                      )}
+                    </div>
                   </TableCell>
                   {orderedDebts.map((debt) => {
                     const payment = month.payments.find(
@@ -108,27 +122,37 @@ export function PayoffSchedule({
                         </TableCell>
                       );
                     }
+                    const extraAmount =
+                      payment.extraAmount ?? new Decimal(0);
+                    const isPayoff = payment.newBalance.eq(0);
+                    const hasExtra = extraAmount.gt(0);
+                    const label = isPayoff
+                      ? 'Payoff'
+                      : payment.isMinimum && !hasExtra
+                        ? 'Min'
+                        : hasExtra
+                          ? `Min + $${formatNumber(extraAmount.toNumber())}`
+                          : payment.payment
+                              .toNumber()
+                              .toLocaleString('en-US', {
+                                style: 'currency',
+                                currency: 'USD',
+                                minimumFractionDigits: 0,
+                                maximumFractionDigits: 0,
+                              });
+
                     return (
                       <TableCell key={debt.id} className="text-center py-3">
                         <div className="flex flex-col items-center gap-0.5">
                           <div
                             className={cn(
                               'text-[10px] font-medium px-1.5 py-px rounded-full',
-                              payment.isMinimum
+                              payment.isMinimum && !hasExtra
                                 ? 'bg-muted text-muted-foreground'
                                 : 'bg-green-50 text-green-700',
                             )}
                           >
-                            {payment.isMinimum
-                              ? 'Min'
-                              : payment.payment
-                                  .toNumber()
-                                  .toLocaleString('en-US', {
-                                    style: 'currency',
-                                    currency: 'USD',
-                                    minimumFractionDigits: 0,
-                                    maximumFractionDigits: 0,
-                                  })}
+                            {label}
                           </div>
                           <div className="text-xs font-medium text-foreground">
                             {payment.newBalance

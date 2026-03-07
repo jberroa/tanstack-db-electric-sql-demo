@@ -23,6 +23,12 @@ interface PayoffStrategyProps {
   totalMonthlyPayment: Decimal;
   onTotalMonthlyPaymentChange: (value: Decimal) => void;
   totalMinPayment: Decimal;
+  extraMoney?: Decimal;
+  extraTargetDebtName?: string;
+  planStartDate?: string | null;
+  onPlanStartDateChange?: (value: string | null) => void;
+  projectedBalances?: Map<string, Decimal> | null;
+  onSyncToPlan?: () => void;
 }
 
 export function PayoffStrategy({
@@ -31,6 +37,12 @@ export function PayoffStrategy({
   totalMonthlyPayment,
   onTotalMonthlyPaymentChange,
   totalMinPayment,
+  extraMoney = new Decimal(0),
+  extraTargetDebtName,
+  planStartDate,
+  onPlanStartDateChange,
+  projectedBalances,
+  onSyncToPlan,
 }: PayoffStrategyProps) {
   // Local state to allow free typing without interference
   const [localValue, setLocalValue] = useState(totalMonthlyPayment.toNumber());
@@ -141,7 +153,7 @@ export function PayoffStrategy({
               </Button>
             </div>
           </div>
-          <div className="flex items-center gap-2">
+          <div className="flex flex-wrap items-center gap-2">
             <button
               type="button"
               onClick={handleSetToMin}
@@ -149,13 +161,68 @@ export function PayoffStrategy({
             >
               Min: ${formatNumber(totalMinPayment)}
             </button>
+            {totalMonthlyPayment.eq(0) && totalMinPayment.gt(0) && (
+              <button
+                type="button"
+                onClick={handleSetToMin}
+                className="text-xs text-muted-foreground hover:text-foreground transition-colors cursor-pointer"
+              >
+                Set to minimums (${formatNumber(totalMinPayment.toNumber())})
+              </button>
+            )}
             {totalMonthlyPayment.gt(0) &&
               totalMonthlyPayment.lt(totalMinPayment) && (
                 <p className="text-[10px] text-destructive font-bold bg-destructive/10 px-1.5 py-0.5 rounded-full whitespace-nowrap">
                   Too low
                 </p>
               )}
+            {extraMoney.gt(0) && extraTargetDebtName && (
+              <p className="text-sm text-green-600 font-medium">
+                $
+                {formatNumber(extraMoney.toNumber())} extra →{' '}
+                {extraTargetDebtName} (first)
+              </p>
+            )}
           </div>
+          {/* Plan start date and Sync */}
+          {onPlanStartDateChange && (
+            <div className="mt-3 pt-3 border-t border-border">
+              <label
+                htmlFor="plan-start-date"
+                className="text-xs font-medium text-muted-foreground block mb-1"
+              >
+                Plan start date
+              </label>
+              <div className="flex items-center gap-2">
+                <input
+                  id="plan-start-date"
+                  type="date"
+                  value={
+                    planStartDate
+                      ? String(planStartDate).slice(0, 10)
+                      : ''
+                  }
+                  onChange={(e) =>
+                    onPlanStartDateChange(
+                      e.target.value || null,
+                    )
+                  }
+                  className="flex-1 px-2 py-1.5 text-sm bg-muted/30 border-0 rounded-lg text-foreground focus:ring-2 focus:ring-primary/10 outline-none"
+                />
+                {projectedBalances &&
+                  projectedBalances.size > 0 &&
+                  onSyncToPlan && (
+                    <button
+                      type="button"
+                      onClick={onSyncToPlan}
+                      className="text-xs font-medium text-primary hover:text-primary/80 transition-colors whitespace-nowrap"
+                    >
+                      Sync balances to plan
+                    </button>
+                  )}
+              </div>
+            </div>
+          )}
         </div>
 
         {/* Strategy Selector - Right Side */}

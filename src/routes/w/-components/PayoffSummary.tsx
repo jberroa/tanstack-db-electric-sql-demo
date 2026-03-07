@@ -1,6 +1,8 @@
 import { Card, CardContent } from '@/components/ui/card';
 import { PayoffScheduleResult } from '@/lib/universal/payoff';
 import { Temporal } from '@js-temporal/polyfill';
+import Decimal from 'decimal.js';
+import { Calendar, DollarSign, Trophy, Wallet } from 'lucide-react';
 import {
   Area,
   AreaChart,
@@ -10,13 +12,43 @@ import {
   XAxis,
   YAxis,
 } from 'recharts';
-import { DollarSign } from 'lucide-react';
 
-interface PayoffSummaryProps {
-  payoffSchedule: PayoffScheduleResult;
+function formatDuration(months: number): string {
+  if (months < 12) return `${months} mo`;
+  const years = Math.floor(months / 12);
+  const remainingMonths = months % 12;
+  if (remainingMonths === 0) return `${years} yr`;
+  return `${years} yr ${remainingMonths} mo`;
 }
 
-export function PayoffSummary({ payoffSchedule }: PayoffSummaryProps) {
+function formatCurrency(value: Decimal | number): string {
+  const n = typeof value === 'number' ? value : value.toNumber();
+  return n.toLocaleString('en-US', {
+    style: 'currency',
+    currency: 'USD',
+    maximumFractionDigits: 2,
+    minimumFractionDigits: 2,
+  });
+}
+
+interface PayoffSummaryProps {
+  payoffSchedule: PayoffScheduleResult & {
+    minPaymentOnlyInterest?: Decimal;
+    extraPaymentSavings?: Decimal | null;
+  };
+  strategyInterestDiff?: Decimal;
+  oppositeStrategyName?: string;
+  oppositeStrategyTotalInterest?: Decimal;
+  extraMoney?: Decimal;
+}
+
+export function PayoffSummary({
+  payoffSchedule,
+  strategyInterestDiff,
+  oppositeStrategyName,
+  oppositeStrategyTotalInterest,
+  extraMoney,
+}: PayoffSummaryProps) {
   let previousPaidOffDebts = new Set<string>();
 
   const data = payoffSchedule.months.map((m) => {
@@ -48,6 +80,20 @@ export function PayoffSummary({ payoffSchedule }: PayoffSummaryProps) {
   const startOfYearDates = data
     .filter((d) => d.isStartOfYear)
     .map((d) => d.date);
+
+  const firstDebtPaidOffMonth = payoffSchedule.months.findIndex((m) =>
+    m.payments.some((p) => p.newBalance.eq(0)),
+  );
+  const monthsUntilFirstDebtPaidOff =
+    firstDebtPaidOffMonth >= 0
+      ? firstDebtPaidOffMonth
+      : payoffSchedule.monthsToPayoff;
+
+  const firstMonth = payoffSchedule.months[0];
+  const totalPayments = payoffSchedule.months.reduce(
+    (sum, m) => sum.add(m.totalPayment),
+    new Decimal(0),
+  );
 
   const CustomDot = (props: any) => {
     const { cx, cy, payload } = props;
@@ -81,12 +127,13 @@ export function PayoffSummary({ payoffSchedule }: PayoffSummaryProps) {
   };
 
   return (
-    <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+    <div className="grid grid-cols-2 gap-4 items-stretch">
+      {/* Row 1: Debt Free By, Total Interest */}
       {/* Debt Free Date */}
-      <Card className="border-0 bg-gradient-to-br from-green-500 to-green-700 text-white rounded-2xl overflow-hidden relative">
+      <Card className="border-0 bg-gradient-to-br from-green-500 to-green-700 text-white rounded-2xl overflow-hidden relative flex flex-col min-h-[140px]">
         <div className="absolute top-0 right-0 -mt-4 -mr-4 w-24 h-24 bg-white/10 rounded-full blur-2xl"></div>
         <div className="absolute bottom-0 left-0 -mb-4 -ml-4 w-20 h-20 bg-black/10 rounded-full blur-xl"></div>
-        <CardContent className="px-6 py-3 relative z-10">
+        <CardContent className="px-6 py-3 relative z-10 flex flex-col flex-1">
           <div className="text-teal-100 text-sm font-medium mb-1">
             Debt Free By
           </div>
@@ -110,12 +157,12 @@ export function PayoffSummary({ payoffSchedule }: PayoffSummaryProps) {
       </Card>
 
       {/* Total Interest */}
-      <Card className="border border-border shadow-none bg-card rounded-2xl overflow-hidden">
-        <CardContent className="px-6 py-3">
-          <div className="text-muted-foreground text-sm font-medium mb-1">
+      <Card className="border border-border/50 bg-card/50 rounded-xl overflow-hidden shadow-sm flex flex-col min-h-[140px]">
+        <CardContent className="p-4 flex flex-col flex-1">
+          <div className="text-xs font-medium text-muted-foreground uppercase tracking-wider mb-2">
             Total Interest
           </div>
-          <div className="text-3xl font-bold text-foreground tracking-tight">
+          <div className="text-2xl font-semibold text-foreground tracking-tight tabular-nums">
             {payoffSchedule.totalInterestPaid
               .toNumber()
               .toLocaleString('en-US', {
@@ -124,19 +171,142 @@ export function PayoffSummary({ payoffSchedule }: PayoffSummaryProps) {
                 maximumFractionDigits: 0,
               })}
           </div>
-          <div className="mt-1 text-muted-foreground text-sm font-medium">
-            Estimated cost
+          {payoffSchedule.extraPaymentSavings?.gt(0) && extraMoney?.gt(0) && (
+            <>
+              {payoffSchedule.minPaymentOnlyInterest !== undefined && (
+                <p className="mt-1 text-[11px] text-muted-foreground">
+                  Min only: $
+                  {payoffSchedule.minPaymentOnlyInterest
+                    .toNumber()
+                    .toLocaleString('en-US', { maximumFractionDigits: 0 })}{' '}
+                  interest
+                </p>
+              )}
+              <p className="mt-1 text-xs text-emerald-600 font-medium">
+                +${extraMoney.toNumber().toLocaleString('en-US', { maximumFractionDigits: 0 })} extra saves ~$
+                {payoffSchedule.extraPaymentSavings
+                  .toNumber()
+                  .toLocaleString('en-US', { maximumFractionDigits: 0 })}
+              </p>
+            </>
+          )}
+          {payoffSchedule.extraPaymentSavings?.gt(0) &&
+            strategyInterestDiff !== undefined &&
+            oppositeStrategyName &&
+            !strategyInterestDiff.eq(0) && (
+              <p className="mt-1 text-[11px] text-muted-foreground">
+                {strategyInterestDiff.gt(0)
+                  ? `${payoffSchedule.strategy === 'avalanche' ? 'Avalanche' : 'Snowball'} saves ~$${strategyInterestDiff.toNumber().toLocaleString('en-US', { maximumFractionDigits: 0 })} vs ${oppositeStrategyName}`
+                  : `${oppositeStrategyName} saves ~$${strategyInterestDiff.abs().toNumber().toLocaleString('en-US', { maximumFractionDigits: 0 })} vs ${payoffSchedule.strategy === 'avalanche' ? 'Avalanche' : 'Snowball'}`}
+              </p>
+            )}
+          {!payoffSchedule.extraPaymentSavings?.gt(0) &&
+            strategyInterestDiff !== undefined &&
+            oppositeStrategyName &&
+            !strategyInterestDiff.eq(0) && (
+              <p
+                className={
+                  strategyInterestDiff.gt(0)
+                    ? 'mt-2 text-xs text-emerald-600 font-medium'
+                    : 'mt-2 text-xs text-amber-600 font-medium'
+                }
+              >
+                {strategyInterestDiff.gt(0)
+                  ? `${payoffSchedule.strategy === 'avalanche' ? 'Avalanche' : 'Snowball'} saves ~$${strategyInterestDiff.toNumber().toLocaleString('en-US', { maximumFractionDigits: 0 })} vs ${oppositeStrategyName}`
+                  : `${oppositeStrategyName} saves ~$${strategyInterestDiff.abs().toNumber().toLocaleString('en-US', { maximumFractionDigits: 0 })} vs ${payoffSchedule.strategy === 'avalanche' ? 'Avalanche' : 'Snowball'}`}
+              </p>
+            )}
+        </CardContent>
+      </Card>
+
+      {/* Row 2: Payoff, Interest */}
+      <Card className="border border-emerald-500/50 bg-card/50 rounded-xl overflow-hidden shadow-sm flex flex-col">
+        <CardContent className="p-4 flex flex-col items-center justify-center text-center flex-1 min-h-[140px]">
+          <div className="flex flex-col items-center">
+            <Trophy className="h-10 w-10 text-emerald-500" />
+            <span className="text-xs font-medium text-muted-foreground mt-1">
+              Payoff
+            </span>
+          </div>
+          <div className="flex flex-col gap-3 mt-2 items-center">
+            <div>
+              <div className="text-xs text-muted-foreground">Next debt</div>
+              <div className="text-lg font-bold text-foreground tabular-nums">
+                {formatDuration(monthsUntilFirstDebtPaidOff)}
+              </div>
+            </div>
+            <div>
+              <div className="text-xs text-muted-foreground">All debts</div>
+              <div className="text-lg font-bold text-foreground tabular-nums">
+                {formatDuration(payoffSchedule.monthsToPayoff)}
+              </div>
+            </div>
+          </div>
+        </CardContent>
+      </Card>
+
+      <Card className="border border-amber-500/50 bg-card/50 rounded-xl overflow-hidden shadow-sm flex flex-col">
+        <CardContent className="p-4 flex flex-col items-center justify-center text-center flex-1 min-h-[140px]">
+          <div className="flex flex-col items-center">
+            <Calendar className="h-10 w-10 text-amber-500" />
+            <span className="text-xs font-medium text-muted-foreground mt-1">
+              Interest
+            </span>
+          </div>
+          <div className="flex flex-col gap-3 mt-2 items-center">
+            <div>
+              <div className="text-xs text-muted-foreground">Next 30 days</div>
+              <div className="text-lg font-bold text-foreground tabular-nums">
+                {firstMonth
+                  ? formatCurrency(firstMonth.totalInterest)
+                  : '$0.00'}
+              </div>
+            </div>
+            <div>
+              <div className="text-xs text-muted-foreground">Total</div>
+              <div className="text-lg font-bold text-foreground tabular-nums">
+                {formatCurrency(payoffSchedule.totalInterestPaid)}
+              </div>
+            </div>
+          </div>
+        </CardContent>
+      </Card>
+
+      {/* Row 3: Payments, Payoff Timeline */}
+      <Card className="border border-sky-500/50 bg-card/50 rounded-xl overflow-hidden shadow-sm flex flex-col">
+        <CardContent className="p-4 flex flex-col items-center justify-center text-center flex-1 min-h-[140px]">
+          <div className="flex flex-col items-center">
+            <Wallet className="h-10 w-10 text-sky-500" />
+            <span className="text-xs font-medium text-muted-foreground mt-1">
+              Payments
+            </span>
+          </div>
+          <div className="flex flex-col gap-3 mt-2 items-center">
+            <div>
+              <div className="text-xs text-muted-foreground">Next 30 days</div>
+              <div className="text-lg font-bold text-foreground tabular-nums">
+                {firstMonth
+                  ? formatCurrency(firstMonth.totalPayment)
+                  : '$0.00'}
+              </div>
+            </div>
+            <div>
+              <div className="text-xs text-muted-foreground">Total</div>
+              <div className="text-lg font-bold text-foreground tabular-nums">
+                {formatCurrency(totalPayments)}
+              </div>
+            </div>
           </div>
         </CardContent>
       </Card>
 
       {/* Payoff Graph */}
-      <Card className="border border-border shadow-none bg-card rounded-2xl overflow-hidden flex flex-col">
-        <CardContent className="px-6 pt-3 pb-0 flex-1 min-h-[60px] flex flex-col">
-          <div className="text-muted-foreground text-sm font-medium">
+      <Card className="border border-border/50 bg-card/50 rounded-xl overflow-hidden shadow-sm flex flex-col">
+        <CardContent className="p-4 flex flex-col min-h-[140px]">
+          <div className="text-xs font-medium text-muted-foreground uppercase tracking-wider mb-3">
             Payoff Timeline
           </div>
-          <div className="flex-1 -ml-4 min-h-[60px]">
+          <div className="flex-1 min-h-[100px] -ml-2">
             <ResponsiveContainer width="100%" height="100%">
               <AreaChart
                 data={data}

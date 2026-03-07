@@ -16,6 +16,8 @@ export const createDebt = createServerFn({ method: 'POST' })
         rate: true,
         balance: true,
         minPayment: true,
+        limit: true,
+        dueDay: true,
       })
       .extend({
         name: debtSchema.shape.name.optional().default('Chase Visa'),
@@ -23,6 +25,8 @@ export const createDebt = createServerFn({ method: 'POST' })
         rate: debtSchema.shape.rate.optional().default('0'),
         balance: debtSchema.shape.balance.optional().default('0'),
         minPayment: debtSchema.shape.minPayment.optional().default('0'),
+        limit: debtSchema.shape.limit.optional(),
+        dueDay: debtSchema.shape.dueDay.optional(),
       }),
   )
   .handler(async ({ data }) => {
@@ -30,7 +34,11 @@ export const createDebt = createServerFn({ method: 'POST' })
 
     const [debt, [{ txid }]] = await db.$transaction([
       db.debt.create({
-        data: data,
+        data: {
+          ...data,
+          limit: data.limit ?? null,
+          dueDay: data.dueDay ?? null,
+        },
       }),
       getTxId(),
     ]);
@@ -40,6 +48,7 @@ export const createDebt = createServerFn({ method: 'POST' })
         rate: debt.rate.toString(),
         balance: debt.balance.toString(),
         minPayment: debt.minPayment.toString(),
+        limit: debt.limit?.toString(),
       },
       txid,
     };
@@ -55,6 +64,8 @@ export const updateDebt = createServerFn({ method: 'POST' })
         rate: true,
         balance: true,
         minPayment: true,
+        limit: true,
+        dueDay: true,
       })
       .partial({
         name: true,
@@ -62,25 +73,29 @@ export const updateDebt = createServerFn({ method: 'POST' })
         rate: true,
         balance: true,
         minPayment: true,
+        limit: true,
+        dueDay: true,
       }),
   )
   .handler(async ({ data }) => {
     await authDebt(data.id);
 
-    // Build update data with only provided fields
     const updateData: {
       name?: string;
       type?: string;
       rate?: string;
       balance?: string;
       minPayment?: string;
+      limit?: string | null;
+      dueDay?: number | null;
     } = {};
-
     if (data.name !== undefined) updateData.name = data.name;
     if (data.type !== undefined) updateData.type = data.type;
     if (data.rate !== undefined) updateData.rate = data.rate;
     if (data.balance !== undefined) updateData.balance = data.balance;
     if (data.minPayment !== undefined) updateData.minPayment = data.minPayment;
+    if (data.limit !== undefined) updateData.limit = data.limit;
+    if (data.dueDay !== undefined) updateData.dueDay = data.dueDay;
 
     const [debt, [{ txid }]] = await db.$transaction([
       db.debt.update({
@@ -95,6 +110,7 @@ export const updateDebt = createServerFn({ method: 'POST' })
         rate: debt.rate.toString(),
         balance: debt.balance.toString(),
         minPayment: debt.minPayment.toString(),
+        limit: debt.limit?.toString(),
       },
       txid,
     };

@@ -7,6 +7,7 @@ const serialize = (workbook: WorkbookEntity) => {
   return {
     ...workbook,
     monthlyPayment: workbook.monthlyPayment.toString(),
+    planStartDate: workbook.planStartDate?.toISOString().slice(0, 10) ?? null,
   };
 };
 
@@ -41,19 +42,28 @@ export const updateWorkbook = createServerFn({ method: 'POST' })
         name: true,
         monthlyPayment: true,
         strategy: true,
+        planStartDate: true,
       })
       .partial({
         name: true,
         monthlyPayment: true,
         strategy: true,
+        planStartDate: true,
       }),
   )
   .handler(async ({ data }) => {
     const { id, ...restData } = data;
     await authWorkbook(id);
 
+    const updateData = { ...restData };
+    if (updateData.planStartDate !== undefined) {
+      updateData.planStartDate = updateData.planStartDate
+        ? new Date(updateData.planStartDate)
+        : null;
+    }
+
     const [workbook, [{ txid }]] = await db.$transaction([
-      db.workbook.update({ where: { id }, data: restData }),
+      db.workbook.update({ where: { id }, data: updateData }),
       getTxId(),
     ]);
     return { workbook: serialize(workbook), txid };
