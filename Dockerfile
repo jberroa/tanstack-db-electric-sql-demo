@@ -31,9 +31,11 @@ RUN corepack enable && corepack prepare pnpm@latest --activate
 COPY package.json pnpm-lock.yaml* ./
 RUN pnpm install --frozen-lockfile --prod
 
-# Copy prisma (needed for Prisma client at runtime)
+# Copy prisma schema
 COPY prisma ./prisma
-RUN pnpm exec prisma generate
+
+# Copy generated Prisma client from builder (avoids needing prisma CLI in prod)
+COPY --from=builder /app/node_modules/.prisma ./node_modules/.prisma
 
 # Copy build output (Nitro outputs to .output)
 COPY --from=builder /app/.output ./.output
