@@ -1,0 +1,10 @@
+node_modules
+.output
+dist
+.git
+.env
+.env.*
+!.env.example
+*.md
+backup_*.sql
+.DS_Store
