@@ -26,6 +26,8 @@ import { AnimatePresence, Reorder } from 'framer-motion';
 import {
   Calendar,
   Car,
+  ChevronDown,
+  ChevronUp,
   CreditCard,
   GraduationCap,
   Home,
@@ -430,12 +432,32 @@ export function DebtsList({
     );
   };
 
+  const [isSectionExpanded, setIsSectionExpanded] = useState(true);
+  useEffect(() => {
+    if (newDebtId) {
+      setIsSectionExpanded(true);
+    }
+  }, [newDebtId]);
+
   return (
-    <div className="h-full flex flex-col bg-card/80 rounded-2xl border border-border/60 mb-1 shadow-sm">
-      {/* Header */}
-      <div className="flex items-center justify-between px-4 py-2 border-b border-border">
-        <h2 className="text-base font-semibold text-foreground">Debts</h2>
-        <div className="flex gap-2">
+    <div className="min-h-0 lg:min-h-[200px] lg:h-full flex flex-col bg-card/80 rounded-2xl border border-border/60 mb-1 shadow-sm">
+      {/* Header: tappable on mobile to collapse/expand */}
+      <div className="flex items-center justify-between px-4 py-2 border-b border-border shrink-0">
+        <button
+          type="button"
+          onClick={() => setIsSectionExpanded((p) => !p)}
+          className="lg:pointer-events-none lg:cursor-default flex items-center gap-2 -mx-2 px-2 py-1 rounded-lg hover:bg-muted/50 lg:hover:bg-transparent transition-colors"
+        >
+          <h2 className="text-base font-semibold text-foreground">Debts</h2>
+          <span className="lg:hidden flex items-center text-muted-foreground">
+            {isSectionExpanded ? (
+              <ChevronUp className="h-4 w-4" />
+            ) : (
+              <ChevronDown className="h-4 w-4" />
+            )}
+          </span>
+        </button>
+        <div className="flex gap-2" onClick={(e) => e.stopPropagation()}>
           {debts.length === 0 && (
             <Button
               onClick={onPopulateDemoDebts}
@@ -459,8 +481,14 @@ export function DebtsList({
         </div>
       </div>
 
-      {/* Debts List */}
-      <div className="flex-1 overflow-y-auto overflow-x-hidden p-0 relative min-h-0">
+      {/* Debts List + Footer: collapsible on mobile */}
+      <div
+        className={cn(
+          'flex-1 min-h-0 flex flex-col lg:flex lg:flex-col',
+          !isSectionExpanded && 'hidden lg:flex',
+        )}
+      >
+      <div className="flex-1 min-h-0 overflow-x-hidden overflow-y-visible p-0 relative lg:overflow-y-auto">
         {debts.length === 0 ? (
           <div className="flex flex-col items-center justify-center text-center p-8 text-muted-foreground">
             <p className="text-sm">No debts added yet</p>
@@ -470,7 +498,7 @@ export function DebtsList({
             axis="y"
             values={debts}
             onReorder={() => {}}
-            className="flex flex-col p-3 gap-3 min-w-0"
+            className="flex flex-col p-3 gap-4 lg:gap-3 min-w-0"
           >
             <AnimatePresence initial={false} mode="popLayout">
               {sortedDebts.map((debt, index) => {
@@ -489,8 +517,8 @@ export function DebtsList({
                     dragListener={false} // Disable manual drag sorting
                     className=""
                   >
-                    <Card className={cn('group relative overflow-hidden transition-shadow hover:shadow-md border border-slate-200/80 bg-white shadow-sm border-l-4', accent.border)}>
-                      <CardContent className="p-4 pt-4">
+                    <Card className={cn('group relative overflow-visible transition-shadow hover:shadow-md border border-slate-200/80 bg-white shadow-sm border-l-4', accent.border)}>
+                      <CardContent className="px-3 py-4 sm:px-4">
                         {/* Header: Icon, Name, Actions */}
                         <div className="flex items-center gap-3 mb-4">
                       <DropdownMenu>
@@ -560,7 +588,7 @@ export function DebtsList({
                     </div>
 
                     {/* Primary metrics - equal columns, 2x2 on mobile */}
-                    <div className="grid grid-cols-2 sm:grid-cols-4 gap-3 pl-11 min-w-0 overflow-hidden">
+                    <div className="grid grid-cols-2 sm:grid-cols-4 gap-3 pl-0 sm:pl-11 min-w-0 overflow-hidden">
                       <div className="min-w-0 overflow-hidden">
                         <label className="text-[10px] font-medium text-muted-foreground block mb-1">
                           Rate (%)
@@ -671,7 +699,7 @@ export function DebtsList({
                       </div>
                     </div>
                     {debt.type === DebtType.Credit && (
-                      <div className="pt-3 mt-3 border-t border-border/60 pl-11 flex items-end gap-4 min-w-0 overflow-hidden">
+                      <div className="pt-3 mt-3 border-t border-border/60 pl-0 sm:pl-11 flex items-end gap-4 min-w-0 overflow-hidden">
                         <div className="min-w-0 overflow-hidden">
                           <label className="text-[10px] font-medium text-muted-foreground block mb-1">
                             Limit ($)
@@ -697,7 +725,7 @@ export function DebtsList({
                       </div>
                     )}
                     {debt.balance.gt(0) && (
-                      <div className="pt-3 mt-3 border-t border-border/60 pl-11">
+                      <div className="pt-3 mt-3 border-t border-border/60 pl-0 sm:pl-11">
                         <PayoffProgressBar
                           progress={
                             (() => {
@@ -740,6 +768,7 @@ export function DebtsList({
           </div>
         </div>
       )}
+      </div>
     </div>
   );
 }

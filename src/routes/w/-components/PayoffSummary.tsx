@@ -127,7 +127,7 @@ export function PayoffSummary({
   };
 
   return (
-    <div className="grid grid-cols-2 gap-4 items-stretch">
+    <div className="grid grid-cols-1 md:grid-cols-2 gap-4 items-stretch">
       {/* Row 1: Debt Free By, Total Interest */}
       {/* Debt Free Date */}
       <Card className="border-0 bg-gradient-to-br from-green-500 to-green-700 text-white rounded-2xl overflow-hidden relative flex flex-col min-h-[140px]">
@@ -302,11 +302,11 @@ export function PayoffSummary({
 
       {/* Payoff Graph */}
       <Card className="border border-border/50 bg-card/50 rounded-xl overflow-hidden shadow-sm flex flex-col">
-        <CardContent className="p-4 flex flex-col min-h-[140px]">
+        <CardContent className="p-4 flex flex-col min-h-[180px] sm:min-h-[200px]">
           <div className="text-xs font-medium text-muted-foreground uppercase tracking-wider mb-3">
             Payoff Timeline
           </div>
-          <div className="flex-1 min-h-[100px] -ml-2">
+          <div className="flex-1 min-h-[140px] sm:min-h-[160px] -ml-2 w-full h-[140px] sm:h-[160px]">
             <ResponsiveContainer width="100%" height="100%">
               <AreaChart
                 data={data}

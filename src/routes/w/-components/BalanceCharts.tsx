@@ -149,16 +149,16 @@ export function BalanceCharts({ debts }: BalanceChartsProps) {
 
   return (
     <div className="flex flex-col gap-4">
-      <Card className="border border-border/50 bg-card/50 rounded-xl overflow-hidden shadow-sm">
-        <CardContent className="px-5 pt-5 pb-5 flex flex-col min-h-[160px]">
+      <Card className="border border-border/50 bg-card/50 rounded-xl overflow-hidden shadow-sm min-w-0">
+        <CardContent className="px-4 sm:px-5 pt-4 sm:pt-5 pb-5 flex flex-col min-h-[140px] sm:min-h-[160px]">
           <h3 className="text-xs font-medium text-muted-foreground uppercase tracking-wider mb-4">
             Balance by category
           </h3>
-          <div className="relative flex-1 min-h-[120px] pt-1 pb-2 flex flex-col items-center">
+          <div className="relative flex-1 min-h-[120px] pt-1 pb-2 flex flex-col items-center min-w-0">
             {byCategory.length > 0 && (
               <ChartContainer
                 config={CATEGORY_CHART_CONFIG}
-                className="mx-auto aspect-square max-h-[200px] w-[200px]"
+                className="mx-auto aspect-square w-full max-w-[180px] sm:max-w-[200px]"
               >
                 <PieChart>
                   <ChartTooltip
@@ -207,7 +207,7 @@ export function BalanceCharts({ debts }: BalanceChartsProps) {
                 </PieChart>
               </ChartContainer>
             )}
-            <div className="flex flex-wrap justify-center gap-x-4 gap-y-1 mt-3">
+            <div className="flex flex-wrap justify-center gap-x-4 gap-y-1 mt-3 gap-2">
               {byCategory.map((entry) => (
                 <div key={entry.category} className="flex items-center gap-1.5">
                   <div
@@ -224,16 +224,16 @@ export function BalanceCharts({ debts }: BalanceChartsProps) {
         </CardContent>
       </Card>
 
-      <Card className="border border-border/50 bg-card/50 rounded-xl overflow-hidden shadow-sm">
-        <CardContent className="px-5 pt-5 pb-5 flex flex-col min-h-[160px]">
+      <Card className="border border-border/50 bg-card/50 rounded-xl overflow-hidden shadow-sm min-w-0">
+        <CardContent className="px-4 sm:px-5 pt-4 sm:pt-5 pb-5 flex flex-col min-h-[140px] sm:min-h-[160px]">
           <h3 className="text-xs font-medium text-muted-foreground uppercase tracking-wider mb-4">
             Balance by debt
           </h3>
-          <div className="relative flex-1 min-h-[120px] pt-1 pb-2 flex flex-col items-center">
+          <div className="relative flex-1 min-h-[120px] pt-1 pb-2 flex flex-col items-center min-w-0">
             {byDebt.length > 0 && (
               <ChartContainer
                 config={debtChartConfig}
-                className="mx-auto aspect-square max-h-[200px] w-[200px]"
+                className="mx-auto aspect-square w-full max-w-[180px] sm:max-w-[200px]"
               >
                 <PieChart>
                   <ChartTooltip
@@ -282,7 +282,7 @@ export function BalanceCharts({ debts }: BalanceChartsProps) {
                 </PieChart>
               </ChartContainer>
             )}
-            <div className="flex flex-wrap justify-center gap-x-4 gap-y-1 mt-3">
+            <div className="flex flex-wrap justify-center gap-x-4 gap-y-1 mt-3 gap-2">
               {byDebt.map((entry) => (
                 <div key={entry.key} className="flex items-center gap-1.5">
                   <div

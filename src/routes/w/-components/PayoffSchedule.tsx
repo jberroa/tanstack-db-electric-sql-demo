@@ -1,4 +1,5 @@
 import { Button } from '@/components/ui/button';
+import { Card, CardContent } from '@/components/ui/card';
 import {
   Table,
   TableBody,
@@ -21,6 +22,15 @@ interface PayoffScheduleProps {
   currentMonthIndex?: number;
 }
 
+function formatCurrency(n: number) {
+  return n.toLocaleString('en-US', {
+    style: 'currency',
+    currency: 'USD',
+    minimumFractionDigits: 0,
+    maximumFractionDigits: 0,
+  });
+}
+
 export function PayoffSchedule({
   payoffSchedule,
   debts,
@@ -39,12 +49,118 @@ export function PayoffSchedule({
 
   return (
     <div className="bg-card rounded-2xl overflow-hidden border border-border">
-      <div className="px-6 py-4 border-b border-border">
+      <div className="px-4 md:px-6 py-4 border-b border-border">
         <h3 className="text-base font-semibold text-foreground">
           Payoff Schedule
         </h3>
       </div>
-      <div className="overflow-x-auto">
+
+      {/* Mobile: Card layout */}
+      <div className="md:hidden space-y-3 p-4">
+        {visibleMonths.map((month) => {
+          const monthDate = Temporal.PlainYearMonth.from(month.date);
+          const isCurrentMonth =
+            currentMonthIndex !== undefined &&
+            month.month === currentMonthIndex;
+          return (
+            <Card
+              key={month.month}
+              className={cn(
+                'border border-border/60',
+                isCurrentMonth && 'ring-2 ring-primary/20 bg-primary/5',
+              )}
+            >
+              <CardContent className="p-4">
+                <div className="flex items-center justify-between mb-3">
+                  <span className="font-semibold text-foreground text-sm">
+                    {monthDate.toPlainDate({ day: 1 }).toLocaleString('en-US', {
+                      month: 'short',
+                      year: 'numeric',
+                    })}
+                  </span>
+                  {isCurrentMonth && (
+                    <span className="text-[10px] font-semibold text-primary bg-primary/10 px-2 py-0.5 rounded">
+                      You are here
+                    </span>
+                  )}
+                </div>
+                <div className="space-y-2">
+                  {orderedDebts.map((debt) => {
+                    const payment = month.payments.find(
+                      (p) => p.debtId === debt.id,
+                    );
+                    if (
+                      !payment ||
+                      (payment.newBalance.eq(0) && payment.payment.eq(0))
+                    ) {
+                      return (
+                        <div
+                          key={debt.id}
+                          className="flex items-center justify-between text-sm"
+                        >
+                          <span className="text-muted-foreground truncate pr-2">
+                            {debt.name}
+                          </span>
+                          <span className="text-green-600 font-medium shrink-0">
+                            Paid off
+                          </span>
+                        </div>
+                      );
+                    }
+                    const extraAmount =
+                      payment.extraAmount ?? new Decimal(0);
+                    const isPayoff = payment.newBalance.eq(0);
+                    const hasExtra = extraAmount.gt(0);
+                    const label = isPayoff
+                      ? 'Payoff'
+                      : payment.isMinimum && !hasExtra
+                        ? 'Min'
+                        : hasExtra
+                          ? `Min + $${formatNumber(extraAmount.toNumber())}`
+                          : formatCurrency(payment.payment.toNumber());
+                    return (
+                      <div
+                        key={debt.id}
+                        className="flex items-center justify-between text-sm"
+                      >
+                        <span className="text-muted-foreground truncate pr-2">
+                          {debt.name}
+                        </span>
+                        <div className="text-right shrink-0">
+                          <span
+                            className={cn(
+                              'text-[10px] font-medium px-2 py-0.5 rounded mr-2',
+                              payment.isMinimum && !hasExtra
+                                ? 'bg-muted text-muted-foreground'
+                                : 'bg-green-50 text-green-700',
+                            )}
+                          >
+                            {label}
+                          </span>
+                          <span className="font-medium text-foreground">
+                            {formatCurrency(payment.newBalance.toNumber())}
+                          </span>
+                        </div>
+                      </div>
+                    );
+                  })}
+                </div>
+                <div className="mt-3 pt-3 border-t border-border flex justify-between items-center">
+                  <span className="text-sm font-medium text-muted-foreground">
+                    Total
+                  </span>
+                  <span className="text-sm font-bold text-foreground">
+                    {formatCurrency(month.remainingBalance.toNumber())}
+                  </span>
+                </div>
+              </CardContent>
+            </Card>
+          );
+        })}
+      </div>
+
+      {/* Desktop: Table layout */}
+      <div className="hidden md:block overflow-x-auto">
         <Table>
           <TableHeader>
             <TableRow className="hover:bg-transparent border-b-border">

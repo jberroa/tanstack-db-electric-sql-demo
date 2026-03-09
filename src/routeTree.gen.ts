@@ -12,7 +12,6 @@ import { Route as rootRouteImport } from './routes/__root'
 import { Route as DashboardRouteImport } from './routes/dashboard'
 import { Route as IndexRouteImport } from './routes/index'
 import { Route as WIdRouteImport } from './routes/w/$id'
-import { Route as ApiElectricRouteImport } from './routes/api/electric'
 import { Route as ApiAuthSplatRouteImport } from './routes/api/auth/$'
 
 const DashboardRoute = DashboardRouteImport.update({
@@ -30,11 +29,6 @@ const WIdRoute = WIdRouteImport.update({
   path: '/w/$id',
   getParentRoute: () => rootRouteImport,
 } as any)
-const ApiElectricRoute = ApiElectricRouteImport.update({
-  id: '/api/electric',
-  path: '/api/electric',
-  getParentRoute: () => rootRouteImport,
-} as any)
 const ApiAuthSplatRoute = ApiAuthSplatRouteImport.update({
   id: '/api/auth/$',
   path: '/api/auth/$',
@@ -44,14 +38,12 @@ const ApiAuthSplatRoute = ApiAuthSplatRouteImport.update({
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
   '/dashboard': typeof DashboardRoute
-  '/api/electric': typeof ApiElectricRoute
   '/w/$id': typeof WIdRoute
   '/api/auth/$': typeof ApiAuthSplatRoute
 }
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
   '/dashboard': typeof DashboardRoute
-  '/api/electric': typeof ApiElectricRoute
   '/w/$id': typeof WIdRoute
   '/api/auth/$': typeof ApiAuthSplatRoute
 }
@@ -59,28 +51,20 @@ export interface FileRoutesById {
   __root__: typeof rootRouteImport
   '/': typeof IndexRoute
   '/dashboard': typeof DashboardRoute
-  '/api/electric': typeof ApiElectricRoute
   '/w/$id': typeof WIdRoute
   '/api/auth/$': typeof ApiAuthSplatRoute
 }
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
-  fullPaths: '/' | '/dashboard' | '/api/electric' | '/w/$id' | '/api/auth/$'
+  fullPaths: '/' | '/dashboard' | '/w/$id' | '/api/auth/$'
   fileRoutesByTo: FileRoutesByTo
-  to: '/' | '/dashboard' | '/api/electric' | '/w/$id' | '/api/auth/$'
-  id:
-    | '__root__'
-    | '/'
-    | '/dashboard'
-    | '/api/electric'
-    | '/w/$id'
-    | '/api/auth/$'
+  to: '/' | '/dashboard' | '/w/$id' | '/api/auth/$'
+  id: '__root__' | '/' | '/dashboard' | '/w/$id' | '/api/auth/$'
   fileRoutesById: FileRoutesById
 }
 export interface RootRouteChildren {
   IndexRoute: typeof IndexRoute
   DashboardRoute: typeof DashboardRoute
-  ApiElectricRoute: typeof ApiElectricRoute
   WIdRoute: typeof WIdRoute
   ApiAuthSplatRoute: typeof ApiAuthSplatRoute
 }
@@ -108,13 +92,6 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof WIdRouteImport
       parentRoute: typeof rootRouteImport
     }
-    '/api/electric': {
-      id: '/api/electric'
-      path: '/api/electric'
-      fullPath: '/api/electric'
-      preLoaderRoute: typeof ApiElectricRouteImport
-      parentRoute: typeof rootRouteImport
-    }
     '/api/auth/$': {
       id: '/api/auth/$'
       path: '/api/auth/$'
@@ -128,7 +105,6 @@ declare module '@tanstack/react-router' {
 const rootRouteChildren: RootRouteChildren = {
   IndexRoute: IndexRoute,
   DashboardRoute: DashboardRoute,
-  ApiElectricRoute: ApiElectricRoute,
   WIdRoute: WIdRoute,
   ApiAuthSplatRoute: ApiAuthSplatRoute,
 }

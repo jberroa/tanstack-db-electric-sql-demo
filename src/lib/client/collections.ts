@@ -1,93 +1,78 @@
-import { electricCollectionOptions } from '@tanstack/electric-db-collection';
+import { queryCollectionOptions } from '@tanstack/query-db-collection';
 import { createCollection } from '@tanstack/react-db';
-import { createDebt, deleteDebt, updateDebt } from '../fn/debts';
+import { QueryClient } from '@tanstack/react-query';
+import { createDebt, deleteDebt, listDebts, updateDebt } from '../fn/debts';
 import {
   createWorkbook,
   deleteWorkbook,
+  listWorkbooks,
   updateWorkbook,
 } from '../fn/workbooks';
 import { debtSchema, workbookSchema } from '../universal/entities';
 
-// Construct absolute URL for Electric sync
-// In browser: uses window.location.origin
-// Fallback for SSR or other contexts
-const getElectricUrl = () => {
-  if (typeof window !== 'undefined') {
-    return `${window.location.origin}/api/electric`;
-  }
-  // Fallback for SSR (shouldn't be used since dashboard has ssr: false)
-  return process.env.VITE_APP_URL
-    ? `${process.env.VITE_APP_URL}/api/electric`
-    : 'http://localhost:3000/api/electric';
-};
+const queryClient = new QueryClient();
 
 export const workbooksCollection = createCollection(
-  electricCollectionOptions({
+  queryCollectionOptions({
     id: 'workbooks',
     schema: workbookSchema,
-    shapeOptions: {
-      url: getElectricUrl(),
-      params: { table: 'workbooks' },
-    },
+    queryKey: ['workbooks'],
+    queryFn: () => listWorkbooks(),
+    queryClient,
     getKey: (item) => item.id,
+    refetchInterval: 0,
 
     onInsert: async ({ transaction }) => {
       const newItem = transaction.mutations[0].modified;
-      const { txid } = await createWorkbook({ data: newItem });
-      return { txid };
+      await createWorkbook({ data: newItem });
     },
 
     onUpdate: async ({ transaction }) => {
       const { original, changes } = transaction.mutations[0];
-      const { txid } = await updateWorkbook({
+      await updateWorkbook({
         data: { ...changes, id: original.id },
       });
-      return { txid };
     },
 
     onDelete: async ({ transaction }) => {
       const deletedItem = transaction.mutations[0].original;
-      const { txid } = await deleteWorkbook({
+      await deleteWorkbook({
         data: { id: deletedItem.id },
       });
-      return { txid };
     },
   }),
 );
 
 export const debtsCollection = createCollection(
-  electricCollectionOptions({
+  queryCollectionOptions({
     id: 'debts',
     schema: debtSchema,
-    shapeOptions: {
-      url: getElectricUrl(),
-      params: { table: 'debts' },
-    },
+    queryKey: ['debts'],
+    queryFn: () => listDebts(),
+    queryClient,
     getKey: (item) => item.id,
+    refetchInterval: 0,
 
     onInsert: async ({ transaction }) => {
       const newItem = transaction.mutations[0].modified;
-      const { txid } = await createDebt({ data: newItem });
-      return { txid };
+      await createDebt({ data: newItem });
     },
 
     onUpdate: async ({ transaction }) => {
       const { original, changes } = transaction.mutations[0];
-      const { txid } = await updateDebt({
+      await updateDebt({
         data: {
           id: original.id,
           ...changes,
         },
       });
-      return { txid };
     },
 
     onDelete: async ({ transaction }) => {
       const deletedItem = transaction.mutations[0].original;
-      const { txid } = await deleteDebt({
+      await deleteDebt({
         data: { id: deletedItem.id },
       });
-      return { txid };
     },
   }),
 );

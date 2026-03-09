@@ -3,7 +3,7 @@ import { z } from 'zod';
 import { db } from '../server/db';
 import { debtSchema } from '../universal/entities';
 import { DebtType } from '../universal/types';
-import { authDebt, authWorkbook, getTxId } from './helpers';
+import { authDebt, authUser, authWorkbook, getTxId } from './helpers';
 
 export const createDebt = createServerFn({ method: 'POST' })
   .inputValidator(
@@ -137,6 +137,29 @@ export const deleteDebt = createServerFn({ method: 'POST' })
       txid,
     };
   });
+
+export const listDebts = createServerFn({ method: 'GET' }).handler(async () => {
+  const user = await authUser();
+  const userWorkbooks = await db.workbook.findMany({
+    select: { id: true },
+    where: { ownerId: user.id },
+  });
+  const workbookIds = userWorkbooks.map((w) => w.id);
+  if (workbookIds.length === 0) return [];
+
+  const debts = await db.debt.findMany({
+    where: { workbookId: { in: workbookIds } },
+  });
+  return debts.map((debt) => ({
+    ...debt,
+    rate: debt.rate.toString(),
+    balance: debt.balance.toString(),
+    minPayment: debt.minPayment.toString(),
+    limit: debt.limit?.toString() ?? null,
+    createdAt: debt.createdAt.toISOString(),
+    updatedAt: debt.updatedAt.toISOString(),
+  }));
+});
 
 // Demo debt data template
 // Credit cards use 1-2% of balance + interest for minimum payments

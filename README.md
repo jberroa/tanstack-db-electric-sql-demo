@@ -1,27 +1,20 @@
-# Debt Payoff Calculator (TanStack DB + Electric SQL Demo)
+# Debt Payoff Calculator
 
-This is a debt payoff calculator built to demonstrate the power of [TanStack DB](https://tanstack.com/db) combined with [Electric SQL](https://electric-sql.com/) for real-time sync.
+This is a debt payoff calculator built with [TanStack DB](https://tanstack.com/db) for local state management and server-backed data.
 
 It helps users organize their debts, choose a payoff strategy (Avalanche vs. Snowball), and visualize their journey to becoming debt-free.
-
-## 📺 Deep Dive
-
-I recorded a deep dive video explaining how this app works and how TanStack DB integrates with Electric SQL.
-
-https://www.youtube.com/watch?v=ae05QlM50DI
 
 ## 🚀 Tech Stack
 
 - **Framework:** [TanStack Start](https://tanstack.com/start)
-- **State/Sync:** [TanStack DB](https://tanstack.com/db) + [Electric SQL](https://electric-sql.com/)
+- **State/Sync:** [TanStack DB](https://tanstack.com/db) + [TanStack Query](https://tanstack.com/query)
 - **Database:** PostgreSQL (ORM: [Prisma](https://www.prisma.io/))
 - **Auth:** [Better Auth](https://better-auth.com/)
 - **Styling:** [Tailwind CSS](https://tailwindcss.com/) + [shadcn/ui](https://ui.shadcn.com/)
 
 ## ✨ Features
 
-- **Zero Latency:** Data is updated locally instantly, providing a snappy user experience while syncing happens in the background.
-- **Real-time Sync:** Multi-device synchronization powered by Electric SQL.
+- **Instant Updates:** Data refreshes immediately after changes, with optimistic updates for a snappy experience.
 - **Payoff Strategies:** Compare "Snowball" (lowest balance first) vs. "Avalanche" (highest interest first) methods.
 - **Visualizations:** Interactive charts and schedules to see exactly when each debt will be paid off.
 
@@ -33,7 +26,7 @@ Follow these steps to get the app running locally.
 
 - **Node.js 22** (required for Prisma migrations; use `nvm use` if you have [.nvmrc](.nvmrc))
 - npm or pnpm
-- Docker (for the database and Electric sync service)
+- Docker (for the database)
 
 ### 1. Install Dependencies
 
@@ -62,7 +55,7 @@ Email/password authentication works without any OAuth setup. Add the Google vari
 
 ### 3. Start Backend Services
 
-Start PostgreSQL and Electric SQL using Docker Compose:
+Start PostgreSQL using Docker Compose:
 
 ```bash
 npm run dc:up
@@ -98,9 +91,8 @@ Open [http://localhost:3000](http://localhost:3000) in your browser.
 ## 💡 How it Works
 
 1.  **PostgreSQL** acts as the source of truth.
-2.  **Electric SQL** sits in front of Postgres, providing a sync layer that syncs data to the client.
-3.  **TanStack DB** runs in the browser and manages the local database.
-4.  **Server Functions** are used to persist changes to the database.
+2.  **Server Functions** fetch and persist data; TanStack Query handles caching and refetching.
+3.  **TanStack DB** manages the client-side collection state and renders updates after mutations.
 
 ## 📝 License
 

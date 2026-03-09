@@ -8,6 +8,8 @@ const serialize = (workbook: WorkbookEntity) => {
     ...workbook,
     monthlyPayment: workbook.monthlyPayment.toString(),
     planStartDate: workbook.planStartDate?.toISOString().slice(0, 10) ?? null,
+    createdAt: workbook.createdAt.toISOString(),
+    updatedAt: workbook.updatedAt.toISOString(),
   };
 };
 
@@ -81,3 +83,14 @@ export const deleteWorkbook = createServerFn({ method: 'POST' })
     ]);
     return { workbook: serialize(workbook), txid };
   });
+
+export const listWorkbooks = createServerFn({ method: 'GET' }).handler(
+  async () => {
+    const user = await authUser();
+    const workbooks = await db.workbook.findMany({
+      where: { ownerId: user.id },
+      orderBy: { updatedAt: 'desc' },
+    });
+    return workbooks.map(serialize);
+  },
+);

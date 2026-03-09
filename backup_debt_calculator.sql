@@ -2,8 +2,6 @@
 -- PostgreSQL database dump
 --
 
-\restrict kaHHfMqu4kRPVlGaODTs33y0gvcFTnf6LnelNvdszy3IxAElUujsztWzYYzSLOT
-
 -- Dumped from database version 18.3
 -- Dumped by pg_dump version 18.3
 
@@ -405,29 +403,6 @@ ALTER TABLE ONLY public.workbooks
 
 
 --
--- Name: electric_publication_default; Type: PUBLICATION; Schema: -; Owner: -
---
-
-CREATE PUBLICATION electric_publication_default WITH (publish = 'insert, update, delete, truncate', publish_generated_columns = stored);
-
-
---
--- Name: electric_publication_default debts; Type: PUBLICATION TABLE; Schema: public; Owner: -
---
-
-ALTER PUBLICATION electric_publication_default ADD TABLE ONLY public.debts;
-
-
---
--- Name: electric_publication_default workbooks; Type: PUBLICATION TABLE; Schema: public; Owner: -
---
-
-ALTER PUBLICATION electric_publication_default ADD TABLE ONLY public.workbooks;
-
-
---
 -- PostgreSQL database dump complete
 --
-
-\unrestrict kaHHfMqu4kRPVlGaODTs33y0gvcFTnf6LnelNvdszy3IxAElUujsztWzYYzSLOT
 

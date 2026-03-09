@@ -20,19 +20,6 @@ services:
     command:
       - -c
       - listen_addresses=*
-      - -c
-      - wal_level=logical
-
-  electric:
-    image: docker.io/electricsql/electric:latest
-    environment:
-      DATABASE_URL: postgresql://postgres:${POSTGRES_PASSWORD:-postgres}@postgres:5432/debt_calculator_dev?sslmode=disable
-      ELECTRIC_INSECURE: "true"
-    ports:
-      - "4000:3000"
-    depends_on:
-      postgres:
-        condition: service_healthy
 
   app:
     build: .
@@ -43,13 +30,10 @@ services:
       DATABASE_URL: postgresql://postgres:${POSTGRES_PASSWORD:-postgres}@postgres:5432/debt_calculator_dev
       BETTER_AUTH_SECRET: ${BETTER_AUTH_SECRET:-change-me-in-production}
       BETTER_AUTH_URL: ${BETTER_AUTH_URL:-http://localhost:3000}
-      ELECTRIC_URL: http://electric:3000
       VITE_APP_URL: ${BETTER_AUTH_URL:-http://localhost:3000}
     depends_on:
       postgres:
         condition: service_healthy
-      electric:
-        condition: service_started
 
 volumes:
   postgres_data:

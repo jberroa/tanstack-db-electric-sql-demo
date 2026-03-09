@@ -320,16 +320,16 @@ function WorkbookDetail() {
   }
 
   return (
-    <div className="h-screen flex flex-col bg-slate-50 overflow-hidden">
+    <div className="min-h-screen flex flex-col bg-slate-50 lg:h-screen lg:overflow-hidden">
       <WorkbookNavBar user={session.user} workbook={workbook} />
 
       {/* Main Content */}
-      <main className="flex-1 w-full mx-auto overflow-hidden">
-        <div className="grid grid-cols-1 lg:grid-cols-3 h-full">
+      <main className="flex-1 w-full mx-auto overflow-y-auto lg:overflow-hidden">
+        <div className="grid grid-cols-1 lg:grid-cols-3 lg:h-full">
           {/* Left Column: Data Entry */}
-          <div className="lg:col-span-1 h-full flex flex-col min-h-0 bg-gradient-to-b from-slate-50 to-slate-100/80">
-            <div className="flex-1 overflow-hidden min-h-0 pt-4 px-4 lg:pt-6 lg:px-6 pb-0.5">
-              <div className="max-w-xl ml-auto mr-auto lg:mr-0 h-full">
+          <div className="lg:col-span-1 flex flex-col lg:h-full lg:min-h-0 bg-gradient-to-b from-slate-50 to-slate-100/80">
+            <div className="lg:flex-1 lg:overflow-hidden lg:min-h-0 pt-4 px-4 lg:pt-6 lg:px-6 pb-0.5">
+              <div className="max-w-xl ml-auto mr-auto lg:mr-0 lg:h-full">
                 <DebtsList
                   debts={debts}
                   newDebtId={newDebtId}
@@ -374,8 +374,8 @@ function WorkbookDetail() {
           </div>
 
           {/* Right Column: Stats & Visualization */}
-          <div className="lg:col-span-2 h-full overflow-y-auto bg-slate-50/50">
-            <div className="p-6 lg:p-10 max-w-5xl space-y-6">
+          <div className="lg:col-span-2 lg:h-full lg:overflow-y-auto bg-slate-50/50">
+            <div className="p-4 sm:p-6 lg:p-10 max-w-5xl space-y-6">
               {debts.length > 0 ? (
                 <>
                   {totalMonthlyPayment.gt(0) &&

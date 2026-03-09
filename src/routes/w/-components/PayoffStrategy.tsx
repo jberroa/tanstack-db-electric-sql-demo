@@ -128,7 +128,7 @@ export function PayoffStrategy({
                 onChange={handleChange}
                 onFocus={handleFocus}
                 onBlur={handleBlur}
-                className="w-full pl-6 pr-3 py-2 bg-muted/30 border-0 rounded-lg text-base font-semibold text-foreground focus:ring-2 focus:ring-primary/10 focus:bg-muted/50 transition-all outline-none placeholder:text-muted-foreground/50"
+                className="w-full pl-6 pr-3 py-2.5 sm:py-2 min-h-[44px] bg-muted/30 border-0 rounded-lg text-base font-semibold text-foreground focus:ring-2 focus:ring-primary/10 focus:bg-muted/50 transition-all outline-none placeholder:text-muted-foreground/50"
               />
             </div>
             <div className="flex items-center gap-0.5">
@@ -139,7 +139,7 @@ export function PayoffStrategy({
                 disabled={
                   parseNumericInput(localValue) <= totalMinPayment.toNumber()
                 }
-                className="h-8 w-8 rounded-full text-muted-foreground hover:text-foreground"
+                className="h-11 w-11 sm:h-8 sm:w-8 rounded-full text-muted-foreground hover:text-foreground min-h-[44px] min-w-[44px] sm:min-h-0 sm:min-w-0"
               >
                 <MinusCircle className="h-5 w-5" />
               </Button>
@@ -147,7 +147,7 @@ export function PayoffStrategy({
                 variant="ghost"
                 size="icon"
                 onClick={() => handleAdjustment(50)}
-                className="h-8 w-8 rounded-full text-muted-foreground hover:text-foreground"
+                className="h-11 w-11 sm:h-8 sm:w-8 rounded-full text-muted-foreground hover:text-foreground min-h-[44px] min-w-[44px] sm:min-h-0 sm:min-w-0"
               >
                 <PlusCircle className="h-5 w-5" />
               </Button>
@@ -207,7 +207,7 @@ export function PayoffStrategy({
                       e.target.value || null,
                     )
                   }
-                  className="flex-1 px-2 py-1.5 text-sm bg-muted/30 border-0 rounded-lg text-foreground focus:ring-2 focus:ring-primary/10 outline-none"
+                  className="flex-1 px-2 py-2.5 sm:py-1.5 min-h-[44px] sm:min-h-0 text-sm bg-muted/30 border-0 rounded-lg text-foreground focus:ring-2 focus:ring-primary/10 outline-none"
                 />
                 {projectedBalances &&
                   projectedBalances.size > 0 &&
@@ -252,7 +252,7 @@ export function PayoffStrategy({
             <button
               onClick={() => onStrategyChange(PayoffStrategyType.Avalanche)}
               className={cn(
-                'flex items-center gap-2 px-3 py-2 rounded-lg border text-xs font-medium transition-all w-full text-left',
+                'flex items-center gap-2 px-3 py-3 sm:py-2 min-h-[44px] sm:min-h-0 rounded-lg border text-xs font-medium transition-all w-full text-left',
                 strategy === PayoffStrategyType.Avalanche
                   ? 'bg-indigo-50 border-indigo-200 text-indigo-700 shadow-none'
                   : 'bg-transparent border-transparent text-muted-foreground hover:bg-muted/50 hover:text-foreground',
@@ -271,7 +271,7 @@ export function PayoffStrategy({
             <button
               onClick={() => onStrategyChange(PayoffStrategyType.Snowball)}
               className={cn(
-                'flex items-center gap-2 px-3 py-2 rounded-lg border text-xs font-medium transition-all w-full text-left',
+                'flex items-center gap-2 px-3 py-3 sm:py-2 min-h-[44px] sm:min-h-0 rounded-lg border text-xs font-medium transition-all w-full text-left',
                 strategy === PayoffStrategyType.Snowball
                   ? 'bg-indigo-50 border-indigo-200 text-indigo-700 shadow-none'
                   : 'bg-transparent border-transparent text-muted-foreground hover:bg-muted/50 hover:text-foreground',
