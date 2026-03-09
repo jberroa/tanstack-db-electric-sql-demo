@@ -34,8 +34,8 @@ RUN pnpm install --frozen-lockfile --prod
 # Copy prisma schema
 COPY prisma ./prisma
 
-# Copy generated Prisma client from builder (avoids needing prisma CLI in prod)
-COPY --from=builder /app/node_modules/.prisma ./node_modules/.prisma
+# Copy generated Prisma client from builder (output is src/generated/prisma per schema)
+COPY --from=builder /app/src/generated ./src/generated
 
 # Copy build output (Nitro outputs to .output)
 COPY --from=builder /app/.output ./.output
