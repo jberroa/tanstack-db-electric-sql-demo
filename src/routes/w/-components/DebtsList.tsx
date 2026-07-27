@@ -19,7 +19,11 @@ import {
   parseNumericInput,
   toNumericValue,
 } from '@/lib/client/utils';
-import { getSuggestedMinPayment } from '@/lib/universal/payoff-utils';
+import {
+  getSuggestedMinPayment,
+  getInstallmentPayoffProgress,
+  getPlanPayoffProgress,
+} from '@/lib/universal/payoff-utils';
 import { DebtType } from '@/lib/universal/types';
 import Decimal from 'decimal.js';
 import { AnimatePresence, Reorder } from 'framer-motion';
@@ -740,17 +744,20 @@ export function DebtsList({
                     {debt.balance.gt(0) && (
                       <div className="pt-3 mt-3 border-t border-border/60 pl-0 sm:pl-11">
                         <PayoffProgressBar
-                          progress={
-                            (() => {
-                              const startBalance = debt.balance;
-                              const currentBalance =
-                                projectedBalances?.get(debt.id) ?? startBalance;
-                              if (startBalance.lte(0)) return 0;
-                              if (currentBalance.lte(0)) return 100;
-                              const paid = startBalance.minus(currentBalance);
-                              return paid.div(startBalance).mul(100).toNumber();
-                            })()
-                          }
+                          progress={(() => {
+                            const displayedBalance =
+                              projectedBalances?.get(debt.id) ?? debt.balance;
+
+                            if (isInstallmentDebt(debt.type)) {
+                              const installmentProgress = getInstallmentPayoffProgress(
+                                debt.limit,
+                                displayedBalance,
+                              );
+                              if (installmentProgress !== null) return installmentProgress;
+                            }
+
+                            return getPlanPayoffProgress(debt.balance, displayedBalance);
+                          })()}
                           label="Payoff progress"
                         />
                       </div>
