@@ -19,6 +19,7 @@ export const demoDebtsTemplate = [
     rate: 4.5,
     balance: 32500.0,
     minPayment: 447.0, // ~1% of balance + interest (percentage-based)
+    limit: 45000.0,
   },
   {
     name: 'Car Loan',
@@ -26,6 +27,7 @@ export const demoDebtsTemplate = [
     rate: 6.25,
     balance: 8200.0,
     minPayment: 185.0, // Fixed monthly payment (installment loan)
+    limit: 18000.0,
   },
   {
     name: 'Credit Card - Discover',
@@ -40,6 +42,7 @@ export const demoDebtsTemplate = [
     rate: 11.99,
     balance: 19500.0,
     minPayment: 390.0, // ~1.5% of balance + interest (percentage-based)
+    limit: 25000.0,
   },
 ];
 
@@ -54,6 +57,7 @@ export function populateDemoDebts(workbookId: string) {
       rate: debt.rate.toString(),
       minPayment: debt.minPayment.toString(),
       balance: debt.balance.toString(),
+      limit: debt.limit?.toString() ?? null,
       createdAt: now,
       updatedAt: now,
     });

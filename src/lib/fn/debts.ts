@@ -178,6 +178,7 @@ const demoDebtsTemplate = [
     rate: '4.50',
     balance: '32500.00',
     minPayment: '447.00',
+    limit: '45000.00',
   },
   {
     name: 'Car Loan',
@@ -185,6 +186,7 @@ const demoDebtsTemplate = [
     rate: '6.25',
     balance: '8200.00',
     minPayment: '185.00',
+    limit: '18000.00',
   },
   {
     name: 'Credit Card - Discover',
@@ -199,6 +201,7 @@ const demoDebtsTemplate = [
     rate: '11.99',
     balance: '19500.00',
     minPayment: '390.00',
+    limit: '25000.00',
   },
 ];
 
@@ -216,6 +219,7 @@ export const populateDemoDebts = createServerFn({ method: 'POST' })
           rate: debt.rate,
           balance: debt.balance,
           minPayment: debt.minPayment,
+          limit: debt.limit ?? null,
         })),
       }),
       getTxId(),
