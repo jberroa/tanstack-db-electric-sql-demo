@@ -75,6 +75,17 @@ const debtTypeAccent: Record<string, { border: string; icon: string }> = {
   [DebtType.Other]: { border: 'border-l-slate-400', icon: 'bg-slate-100 text-slate-600' },
 };
 
+const INSTALLMENT_TYPES = new Set([
+  DebtType.Auto,
+  DebtType.Home,
+  DebtType.School,
+  DebtType.Personal,
+]);
+
+function isInstallmentDebt(type: DebtType): boolean {
+  return INSTALLMENT_TYPES.has(type);
+}
+
 interface DebtsListProps {
   debts: WorkbookDebt[];
   newDebtId?: string | null;
@@ -698,11 +709,11 @@ export function DebtsList({
                         />
                       </div>
                     </div>
-                    {debt.type === DebtType.Credit && (
+                    {(debt.type === DebtType.Credit || isInstallmentDebt(debt.type)) && (
                       <div className="pt-3 mt-3 border-t border-border/60 pl-0 sm:pl-11 flex items-end gap-4 min-w-0 overflow-hidden">
                         <div className="min-w-0 overflow-hidden">
                           <label className="text-[10px] font-medium text-muted-foreground block mb-1">
-                            Limit ($)
+                            {debt.type === DebtType.Credit ? 'Limit ($)' : 'Total amount ($)'}
                           </label>
                           <div className="rounded-lg bg-muted/30 px-2.5 py-2 h-10 flex items-center border border-transparent focus-within:border-primary/25 focus-within:bg-muted/50 transition-colors duration-150">
                             <EditableCell
@@ -717,11 +728,13 @@ export function DebtsList({
                             />
                           </div>
                         </div>
-                        {debt.limit && debt.limit.gt(0) && (
-                          <UtilizationProgressBar
-                            percent={debt.balance.div(debt.limit).mul(100).toNumber()}
-                          />
-                        )}
+                        {debt.type === DebtType.Credit &&
+                          debt.limit &&
+                          debt.limit.gt(0) && (
+                            <UtilizationProgressBar
+                              percent={debt.balance.div(debt.limit).mul(100).toNumber()}
+                            />
+                          )}
                       </div>
                     )}
                     {debt.balance.gt(0) && (
