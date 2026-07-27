@@ -133,6 +133,7 @@ export const deleteDebt = createServerFn({ method: 'POST' })
         rate: debt.rate.toString(),
         balance: debt.balance.toString(),
         minPayment: debt.minPayment.toString(),
+        limit: debt.limit?.toString(),
       },
       txid,
     };

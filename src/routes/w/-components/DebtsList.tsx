@@ -86,8 +86,8 @@ const INSTALLMENT_TYPES = new Set([
   DebtType.Personal,
 ]);
 
-function isInstallmentDebt(type: DebtType): boolean {
-  return INSTALLMENT_TYPES.has(type);
+function isInstallmentDebt(type: string): boolean {
+  return INSTALLMENT_TYPES.has(type as DebtType);
 }
 
 interface DebtsListProps {
@@ -246,34 +246,6 @@ const EditableCell = ({
     </div>
   );
 };
-
-const DebtField = ({
-  label,
-  value,
-  onSave,
-  prefix,
-  suffix,
-}: {
-  label: string;
-  value: number;
-  onSave: (val: number) => void;
-  prefix?: string;
-  suffix?: string;
-}) => (
-  <div>
-    <EditableCell
-      value={value}
-      type="number"
-      prefix={prefix}
-      suffix={suffix}
-      onSave={(val) => onSave(val as number)}
-      className="text-sm text-foreground/80"
-    />
-    <div className="text-[10px] font-semibold text-muted-foreground mt-0.5 text-left pl-1.5">
-      {label}
-    </div>
-  </div>
-);
 
 const TotalDisplay = ({ label, amount }: { label: string; amount: number }) => (
   <div className="text-right">
@@ -516,9 +488,8 @@ export function DebtsList({
             className="flex flex-col p-3 gap-4 lg:gap-3 min-w-0"
           >
             <AnimatePresence initial={false} mode="popLayout">
-              {sortedDebts.map((debt, index) => {
+              {sortedDebts.map((debt) => {
                 const Icon = getDebtIcon(debt.type);
-                const isLastDebt = index === sortedDebts.length - 1;
                 const accent = debtTypeAccent[debt.type] ?? debtTypeAccent[DebtType.Other];
 
                 return (
