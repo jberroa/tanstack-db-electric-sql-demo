@@ -34,9 +34,6 @@ RUN corepack enable && corepack prepare pnpm@9 --activate
 COPY package.json pnpm-lock.yaml ./
 RUN pnpm install --frozen-lockfile --prod
 
-# Prisma CLI is a devDependency; add it in the runner for migrate deploy on boot
-RUN pnpm add prisma@7 --prod
-
 # Copy prisma schema, migrations, and config
 COPY prisma ./prisma
 COPY prisma.config.ts ./
