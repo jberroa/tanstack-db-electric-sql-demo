@@ -15,7 +15,8 @@ services:
     volumes:
       - type: bind
         source: ./postgres-data
-        target: /var/lib/postgresql/data
+        # Postgres 18+ stores data under /var/lib/postgresql/<version>/ (not .../data)
+        target: /var/lib/postgresql
         is_directory: true
     tmpfs:
       - /tmp
