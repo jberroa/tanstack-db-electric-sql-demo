@@ -14,6 +14,9 @@ RUN pnpm install --frozen-lockfile
 
 # Copy prisma and generate client
 COPY prisma ./prisma
+COPY prisma.config.ts ./
+# DATABASE_URL is required by prisma.config.ts at generate time; no live DB needed
+ENV DATABASE_URL="postgresql://postgres:postgres@localhost:5432/debt_calculator_dev"
 RUN pnpm exec prisma generate
 
 # Copy source and build
@@ -31,8 +34,14 @@ RUN corepack enable && corepack prepare pnpm@9 --activate
 COPY package.json pnpm-lock.yaml ./
 RUN pnpm install --frozen-lockfile --prod
 
-# Copy prisma schema
+# Prisma CLI is a devDependency; add it in the runner for migrate deploy on boot
+RUN pnpm add prisma@7 --prod
+
+# Copy prisma schema, migrations, and config
 COPY prisma ./prisma
+COPY prisma.config.ts ./
+COPY docker-entrypoint.sh ./
+RUN chmod +x docker-entrypoint.sh
 
 # Copy generated Prisma client from builder (output is src/generated/prisma per schema)
 COPY --from=builder /app/src/generated ./src/generated
@@ -46,4 +55,5 @@ ENV NODE_ENV=production
 ENV HOST=0.0.0.0
 ENV PORT=3000
 
+ENTRYPOINT ["./docker-entrypoint.sh"]
 CMD ["node", ".output/server/index.mjs"]

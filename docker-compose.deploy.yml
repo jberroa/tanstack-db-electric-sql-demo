@@ -1,3 +1,9 @@
+# Coolify Docker Compose deploy
+# https://coolify.io/docs/applications/build-packs/docker-compose
+#
+# Storage: use Coolify bind mounts (is_directory) so data lives on the host
+# under this stack's deploy path and survives container rebuilds.
+# Do NOT enable "remove volumes" on redeploy in Coolify.
 services:
   postgres:
     image: postgres:18-alpine
@@ -7,11 +13,14 @@ services:
       POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:-postgres}
       POSTGRES_DB: debt_calculator_dev
     volumes:
-      - postgres_data:/var/lib/postgresql/data
+      - type: bind
+        source: ./postgres-data
+        target: /var/lib/postgresql/data
+        is_directory: true
     tmpfs:
       - /tmp
     healthcheck:
-      test: ["CMD-SHELL", "pg_isready -U postgres -d debt_calculator_dev"]
+      test: ['CMD-SHELL', 'pg_isready -U postgres -d debt_calculator_dev']
       interval: 10s
       timeout: 5s
       retries: 5
@@ -25,11 +34,9 @@ services:
     environment:
       DATABASE_URL: postgresql://postgres:${POSTGRES_PASSWORD:-postgres}@postgres:5432/debt_calculator_dev
       BETTER_AUTH_SECRET: ${BETTER_AUTH_SECRET:-change-me-in-production}
-      BETTER_AUTH_URL: ${BETTER_AUTH_URL:-http://localhost:3000}
-      VITE_APP_URL: ${BETTER_AUTH_URL:-http://localhost:3000}
+      # Prefer explicit BETTER_AUTH_URL; else Coolify's SERVICE_URL_APP (e.g. https://debt.2elite.co)
+      BETTER_AUTH_URL: ${BETTER_AUTH_URL:-${SERVICE_URL_APP:-http://localhost:3000}}
+      VITE_APP_URL: ${VITE_APP_URL:-${BETTER_AUTH_URL:-${SERVICE_URL_APP:-http://localhost:3000}}}
     depends_on:
       postgres:
         condition: service_healthy
-
-volumes:
-  postgres_data:
